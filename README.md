@@ -38,13 +38,15 @@ Highlighting comes from the language server's semantic tokens: the extension has
 
 ## Installing
 
-Install the extension from its `.vsix` file: in VS Code, run **Extensions: Install from VSIX...** from the Command Palette and pick the file, or run:
+Download the extension's `.vsix` file, `rdcore-vscode-<version>.vsix`, from the [releases](https://github.com/rubberduck-vba/RDCore.VSCode/releases): for example `rdcore-vscode-0.1.0-alpha.vsix`. `SHA256SUMS` beside it lets you check the download.
+
+Then, in VS Code, run **Extensions: Install from VSIX...** from the Command Palette and pick the file, or run:
 
 ```powershell
-code --install-extension rdcore-vscode-0.1.0.vsix
+code --install-extension rdcore-vscode-0.1.0-alpha.vsix
 ```
 
-[Building from source](#building-from-source) says how to make the `.vsix`.
+VS Code shows the extension's version without the release's suffix: `0.1.0` for `0.1.0-alpha`. [Building from source](#building-from-source) says how to make the `.vsix` yourself.
 
 ## Settings
 
@@ -112,7 +114,7 @@ npm run package
 ## License
 RDCore.VSCode is licensed under the GNU General Public License, version 3 or any later version: see [LICENSE-GPLv3.md](LICENSE-GPLv3.md). The license file reproduces the official text, in English. A French version of the license is available on request.
 
-To report a problem, open an [issue](https://github.com/retailcoder/RDCore.VSCode/issues).
+To report a problem, open an [issue](https://github.com/rubberduck-vba/RDCore.VSCode/issues).
 
 ---
 ### See also
