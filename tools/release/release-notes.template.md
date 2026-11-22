@@ -1,4 +1,4 @@
-**Preview build.** RDCore for VS Code {VERSION} is for evaluation, not a certified build.
+**Preview build.** RDCore for VS Code {VERSION} is a build for evaluation.
 
 Built from commit [`{SHORT}`]({REPOSITORY}/commit/{COMMIT}) by [this workflow run]({RUN}).
 

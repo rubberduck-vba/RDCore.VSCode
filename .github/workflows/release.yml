@@ -1,4 +1,4 @@
-# RDCore for VS Code — Release
+# RDCore for VS Code: Release
 #
 # Builds the extension and packages it as a .vsix. A pushed `v*` tag then attaches it to a DRAFT GitHub release, which a
 # maintainer checks and publishes by hand.
