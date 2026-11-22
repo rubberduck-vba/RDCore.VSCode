@@ -218,7 +218,9 @@ jobs:
         run: |
           found=$(ls)
           [ "$found" = "$VSIX" ] || { echo "::error::Expected $VSIX, found: $found"; exit 1; }
-          unzip -l "$VSIX" | grep -q ' extension/dist/extension.js$' || { echo "::error::$VSIX has no extension/dist/extension.js."; exit 1; }
+          # listed to a file first: grep -q stops reading early, which pipefail would take for unzip failing
+          unzip -l "$VSIX" > "$RUNNER_TEMP/listing.txt"
+          grep -q ' extension/dist/extension.js$' "$RUNNER_TEMP/listing.txt" || { echo "::error::$VSIX has no extension/dist/extension.js."; exit 1; }
           expected=$(node -p "require('$GITHUB_WORKSPACE/package.json').version")
           packaged=$(unzip -p "$VSIX" extension/package.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")
           [ "$packaged" = "$expected" ] || { echo "::error::$VSIX has version $packaged, package.json has $expected."; exit 1; }
