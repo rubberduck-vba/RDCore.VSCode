@@ -69,6 +69,14 @@ When the setting is missing, or the folder is not a platform, the extension says
 
 Open the folder of an RDCore project: the folder that has the `.rdproj` file. The extension starts when the folder has one, or when you open a module. It opens the folder of the first `.rdproj` it finds as the platform's workspace.
 
+The extension opens `.bas` and `.cls` files as VBA (`files.associations`), because VS Code's own Visual Basic and TeX languages also claim them. Another extension can claim a module's file extension too, and the module then opens in that extension's language. The language server still serves it, by its file, and the other extension's features apply to it as well. To open it as VBA, pick **VBA** from the language indicator in the status bar, or add the association to your settings:
+
+```json
+{
+  "files.associations": { "*.bas": "vba" }
+}
+```
+
 ## Debugging
 
 Press F5. With no `launch.json`, the extension runs the program from its entry point: `Main`, in the one standard module that declares it. To choose another, add a configuration of type `rdcore` (the **RDCore: Launch** snippets):

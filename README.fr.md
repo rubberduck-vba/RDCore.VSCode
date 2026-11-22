@@ -69,6 +69,14 @@ Quand le paramètre est absent, ou que le dossier n'est pas une plateforme, l'ex
 
 Ouvrez le dossier d'un projet RDCore : le dossier qui contient le fichier `.rdproj`. L'extension démarre quand le dossier en contient un, ou quand vous ouvrez un module. Elle ouvre le dossier du premier `.rdproj` qu'elle trouve comme espace de travail de la plateforme.
 
+L'extension ouvre les fichiers `.bas` et `.cls` comme du VBA (`files.associations`), parce que les langages Visual Basic et TeX intégrés à VS Code les revendiquent aussi. Une autre extension peut revendiquer l'extension de fichier d'un module, et le module s'ouvre alors dans le langage de cette extension. Le serveur de langage le sert quand même, d'après son fichier, et les fonctionnalités de l'autre extension s'y appliquent aussi. Pour l'ouvrir comme du VBA, choisissez **VBA** dans l'indicateur de langage de la barre d'état, ou ajoutez l'association à vos paramètres :
+
+```json
+{
+  "files.associations": { "*.bas": "vba" }
+}
+```
+
 ## Déboguer
 
 Appuyez sur F5. Sans `launch.json`, l'extension exécute le programme à partir de son point d'entrée : `Main`, dans le seul module standard qui le déclare. Pour en choisir un autre, ajoutez une configuration de type `rdcore` (les extraits **RDCore: Launch**) :
