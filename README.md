@@ -32,8 +32,8 @@ Highlighting comes from the language server's semantic tokens: the extension has
 
 ## Requirements
 
-- **An RDCore platform:** a release from [RDCore's releases](https://github.com/rubberduck-vba/RDCore/releases), such as [v0.2.1-alpha.1](https://github.com/rubberduck-vba/RDCore/releases/tag/v0.2.1-alpha.1), or a platform you built from source. RDCore's [getting started](https://rubberduck-vba.github.io/RDCore/getting-started.html) page says how to get one.
-- **The .NET runtime that platform needs:** [.NET 11](https://dotnet.microsoft.com/download/dotnet/11.0) for v0.2.1-alpha.1.
+- **An RDCore platform:** a release from [RDCore's releases](https://github.com/rubberduck-vba/RDCore/releases), such as [v0.2.4-alpha](https://github.com/rubberduck-vba/RDCore/releases/tag/v0.2.4-alpha), or a platform you built from source. RDCore's [getting started](https://rubberduck-vba.github.io/RDCore/getting-started.html) page says how to get one.
+- **The .NET runtime that platform needs:** [.NET 11](https://dotnet.microsoft.com/download/dotnet/11.0) for v0.2.4-alpha.
 - **Visual Studio Code** 1.146 or later.
 
 ## Installing

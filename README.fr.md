@@ -32,8 +32,8 @@ La coloration vient des jetons sémantiques du serveur de langage : l'extension 
 
 ## Prérequis
 
-- **Une plateforme RDCore :** une version des [publications de RDCore](https://github.com/rubberduck-vba/RDCore/releases), comme la [v0.2.1-alpha.1](https://github.com/rubberduck-vba/RDCore/releases/tag/v0.2.1-alpha.1), ou une plateforme que vous avez compilée à partir des sources. La page [Démarrer avec RDCore](https://rubberduck-vba.github.io/RDCore/getting-started.fr.html) explique comment en obtenir une.
-- **L'environnement d'exécution .NET dont cette plateforme a besoin :** [.NET 11](https://dotnet.microsoft.com/download/dotnet/11.0) pour la v0.2.1-alpha.1.
+- **Une plateforme RDCore :** une version des [publications de RDCore](https://github.com/rubberduck-vba/RDCore/releases), comme la [v0.2.4-alpha](https://github.com/rubberduck-vba/RDCore/releases/tag/v0.2.4-alpha), ou une plateforme que vous avez compilée à partir des sources. La page [Démarrer avec RDCore](https://rubberduck-vba.github.io/RDCore/getting-started.fr.html) explique comment en obtenir une.
+- **L'environnement d'exécution .NET dont cette plateforme a besoin :** [.NET 11](https://dotnet.microsoft.com/download/dotnet/11.0) pour la v0.2.4-alpha.
 - **Visual Studio Code** 1.146 ou une version ultérieure.
 
 ## Installation
