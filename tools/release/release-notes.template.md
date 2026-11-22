@@ -35,6 +35,6 @@ On macOS, `shasum -a 256 -c SHA256SUMS` checks the sum.
 
 The `.vsix` is **not signed**.
 
-### Source and licence
+### Source and license
 
 RDCore for VS Code is licensed under the GNU General Public License, version 3 or any later version. Its source is in [{REPO}]({REPOSITORY}).
