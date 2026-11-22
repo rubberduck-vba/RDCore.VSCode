@@ -46,6 +46,12 @@
         "configuration": "./language-configuration.json"
       }
     ],
+    "configurationDefaults": {
+      "files.associations": {
+        "*.bas": "vba",
+        "*.cls": "vba"
+      }
+    },
     "configuration": {
       "title": "RDCore",
       "properties": {

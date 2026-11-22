@@ -21,6 +21,9 @@ import {
 const ClientId = "rdcore";
 const ClientName = "RDCore";
 
+// the modules of RD-VBA and VB6 projects (RDCore.SDK SupportedLanguages.RDVBA and VB6, ModuleFileTypes), as package.json names them.
+const ModuleExtensions = ["bas", "cls", "frm", "ctl", "pag", "dob", "doccls", "rdform"];
+
 let client: LanguageClient | undefined;
 let server: ChildProcess | undefined;
 let output: vscode.LogOutputChannel;
@@ -104,7 +107,12 @@ async function start(): Promise<void> {
 
     const serverOptions: ServerOptions = () => startServer(root, workspace);
     const clientOptions: LanguageClientOptions = {
-        documentSelector: [{ scheme: "file", language: "vba" }],
+        // a module is served by its file too: VS Code's own Visual Basic (vb) and TeX languages claim .bas and .cls, and a user
+        // may associate a module to another language.
+        documentSelector: [
+            { scheme: "file", language: "vba" },
+            { scheme: "file", pattern: `**/*.{${ModuleExtensions.join(",")}}` },
+        ],
         outputChannel: output,
         workspaceFolder: vscode.workspace.getWorkspaceFolder(vscode.Uri.file(workspace)),
     };
