@@ -14,7 +14,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "rdcore-vscode-test-"));
 after(() => fs.rmSync(scratch, { recursive: true, force: true }));
 
-// an opened folder that holds a project folder with an .rdproj, at the depth given (0: the opened folder is the project folder).
+// an opened folder that holds a project folder with an .rdproj: the opened folder itself at depth 0, else hello under depth levels of folders.
 function openedFolder(name, depth) {
     const opened = path.join(scratch, name);
     const project = depth === 0 ? opened : path.join(opened, ...Array.from({ length: depth }, (_, level) => `level${level}`), "hello");
