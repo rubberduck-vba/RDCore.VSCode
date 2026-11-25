@@ -161,6 +161,7 @@
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
+    "test": "node esbuild.mjs && node --test \"test/*.test.mjs\"",
     "smoke": "node esbuild.mjs && node scripts/smoke.mjs",
     "package": "vsce package --no-dependencies",
     "vscode:prepublish": "npm run typecheck && node esbuild.mjs --production"

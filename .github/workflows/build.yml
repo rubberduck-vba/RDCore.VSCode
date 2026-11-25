@@ -35,6 +35,9 @@ jobs:
    - name: Build
      run: npm run build
 
+   - name: Test
+     run: npm test
+
    # vsce runs vscode:prepublish first: the type check again, and the production bundle that goes into the package.
    - name: Package
      run: npx vsce package --no-dependencies --out rdcore-vscode.vsix

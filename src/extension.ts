@@ -12,10 +12,11 @@ import {
 import {
     DebugAdapterId,
     PlatformRootError,
+    type WorkspaceFolderEntry,
     connectToPipe,
-    findProjectFolder,
     prepareDebugAdapter,
     prepareLanguageServer,
+    projectWorkspaceFolder,
 } from "./launch";
 
 const ClientId = "rdcore";
@@ -72,28 +73,25 @@ async function tellToOpenSettings(message: string): Promise<void> {
     }
 }
 
-function workspaceFolders(): string[] {
-    return (vscode.workspace.workspaceFolders ?? []).filter(folder => folder.uri.scheme === "file").map(folder => folder.uri.fsPath);
-}
-
-// the workspace the platform opens: the folder of the workspace's .rdproj, else the first workspace folder.
-function projectFolder(): string | undefined {
-    const folders = workspaceFolders();
-    return findProjectFolder(folders) ?? folders[0];
+function workspaceFolders(): WorkspaceFolderEntry[] {
+    return (vscode.workspace.workspaceFolders ?? [])
+        .filter(folder => folder.uri.scheme === "file")
+        .map(folder => ({ path: folder.uri.fsPath, name: folder.name, index: folder.index }));
 }
 
 async function start(): Promise<void> {
     const root = platformRoot();
-    const workspace = projectFolder();
+    const project = projectWorkspaceFolder(workspaceFolders());
     if (!root) {
         return;
     }
 
-    if (!workspace) {
+    if (!project) {
         void vscode.window.showWarningMessage("RDCore: open the folder of an RDCore project (.rdproj) to start the language server.");
         return;
     }
 
+    const workspace = project.path;
     // checked here, so a platform root that can't be used is said once, plainly, instead of as a failed start.
     try {
         prepareLanguageServer(root, workspace);
@@ -114,7 +112,8 @@ async function start(): Promise<void> {
             { scheme: "file", pattern: `**/*.{${ModuleExtensions.join(",")}}` },
         ],
         outputChannel: output,
-        workspaceFolder: vscode.workspace.getWorkspaceFolder(vscode.Uri.file(workspace)),
+        // the initialize request's rootUri and only workspace folder: the project folder, as --workspace says it.
+        workspaceFolder: { uri: vscode.Uri.file(project.path), name: project.name, index: project.index },
     };
 
     client = new LanguageClient(ClientId, ClientName, serverOptions, clientOptions);
@@ -220,8 +219,10 @@ async function goToLocation(uri: string, range: LspRange): Promise<void> {
 class DebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
     createDebugAdapterDescriptor(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         const root = platformRoot();
-        const folders = session.workspaceFolder?.uri.scheme === "file" ? [session.workspaceFolder.uri.fsPath] : workspaceFolders();
-        const workspace = findProjectFolder(folders) ?? folders[0];
+        const folders = session.workspaceFolder?.uri.scheme === "file"
+            ? [{ path: session.workspaceFolder.uri.fsPath, name: session.workspaceFolder.name, index: session.workspaceFolder.index }]
+            : workspaceFolders();
+        const workspace = projectWorkspaceFolder(folders)?.path;
         if (!root) {
             throw new Error("rdcore.platformRoot is not set.");
         }

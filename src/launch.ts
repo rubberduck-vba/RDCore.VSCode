@@ -176,6 +176,34 @@ export function connectToPipe(pipeName: string, options: { timeoutMs?: number; g
     });
 }
 
+/** A folder of the workspace: its path, its name, and its index among the workspace's folders. */
+export interface WorkspaceFolderEntry {
+    readonly path: string;
+    readonly name: string;
+    readonly index: number;
+}
+
+/**
+ * The folder the platform opens, for both of the ways the language server is told it: the --workspace argument, and the language
+ * client's workspace folder, which the client sends as the initialize request's rootUri and its only workspace folder. It is the
+ * folder of the first .rdproj (findProjectFolder), which can be below the opened folder that holds it, else the first opened folder.
+ * The server loads the project of its rootUri, and starts the rest of the platform on --workspace (RDCore.SDK RDCoreClientApp sends
+ * the --workspace folder as rootUri): both name this one folder. Its index is the opened folder's that holds it.
+ */
+export function projectWorkspaceFolder(opened: readonly WorkspaceFolderEntry[], maxDepth = 4): WorkspaceFolderEntry | undefined {
+    const project = findProjectFolder(opened.map(folder => folder.path), maxDepth);
+    if (project === undefined) {
+        return opened[0];
+    }
+
+    const full = path.resolve(project);
+    const holder = opened.find(folder => {
+        const relative = path.relative(path.resolve(folder.path), full);
+        return !relative.startsWith("..") && !path.isAbsolute(relative);
+    });
+    return { path: full, name: path.basename(full), index: holder?.index ?? 0 };
+}
+
 /** The folder of the first .rdproj among the given folders: a folder's own, else the first found under it. */
 export function findProjectFolder(folders: readonly string[], maxDepth = 4): string | undefined {
     for (const folder of folders) {
