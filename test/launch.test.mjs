@@ -25,7 +25,7 @@ function openedFolder(name, depth) {
 
 test("vscode-languageclient sends the initialize rootUri and workspace folder of clientOptions.workspaceFolder", () => {
     // the premise of the test below: the client's rootUri is the workspace folder the extension gives it. If this fails, the client
-    // takes its root from elsewhere now, and what the extension gives it must be checked again.
+    // takes its root from elsewhere, and what the extension gives it must be checked again.
     const client = fs.readFileSync(path.join(here, "..", "node_modules", "vscode-languageclient", "lib", "common", "client.js"), "utf8");
     assert.match(client, /this\._clientOptions\.workspaceFolder\.uri\.fsPath/);
 });
