@@ -10,5 +10,5 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Public Function Greet(ByVal name As String, ByVal times As Long) As String
-    Greet = "Hello, " & name & " (" & times & ")"
+    Greet = "Hello, " & name & " (" & CStr(times) & ")"
 End Function

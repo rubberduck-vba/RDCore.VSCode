@@ -112,7 +112,7 @@ npm run package
 
 - `npm run build` bundles the extension into `dist/`, and `npm run watch` keeps doing it.
 - F5 in this repository starts an Extension Development Host on `samples/hello`, a small project to try the extension on.
-- `npm run smoke` starts the language server and the debug adapter of a platform with the extension's own launch code, sends each its `initialize` request, and prints what they answer. It then runs the sample program to a conditional breakpoint. It takes `--platform-root <folder>` (or `RDCORE_SMOKE_PLATFORM_ROOT`) and `--workspace <folder>`.
+- `npm run smoke` starts the language server and the debug adapter of a platform with the extension's own launch code, sends each its `initialize` request, and prints what they answer. It checks completion and hover in the sample: a member of its class, a member of the standard library's `Debug` object, a variable and `CStr`. It then runs the sample program to a conditional breakpoint. It takes `--platform-root <folder>` (or `RDCORE_SMOKE_PLATFORM_ROOT`) and `--workspace <folder>`. The build workflow runs it on Linux against the latest RDCore release.
 
 ### How it starts the platform
 

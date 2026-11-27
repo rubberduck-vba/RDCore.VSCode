@@ -12,7 +12,7 @@ permissions:
 jobs:
  build:
   # the extension is TypeScript bundled for VS Code's Node: one system builds and packages it for all. The smoke script
-  # (npm run smoke) needs a deployed platform, so it doesn't run here.
+  # (npm run smoke) runs in the smoke job, which deploys a released platform first.
   runs-on: ubuntu-latest
   timeout-minutes: 15
 
@@ -49,3 +49,48 @@ jobs:
       path: rdcore-vscode.vsix
       if-no-files-found: error
       retention-days: 14
+
+ smoke:
+  # the smoke script against the latest RDCore release for Linux, which the extension is a client of: the language server
+  # answers completion and hover in the sample (scripts/smoke.mjs), and the debug adapter runs it to a conditional breakpoint.
+  # The release is framework-dependent: .NET 11 runs it. Its archive is checked against the release's SHA256SUMS before it
+  # is unpacked.
+  runs-on: ubuntu-latest
+  timeout-minutes: 20
+
+  steps:
+   - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+     with:
+      persist-credentials: false
+
+   - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+     with:
+      node-version: 22
+      cache: npm
+
+   - name: Setup .NET
+     uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+     with:
+      dotnet-version: 11.0
+
+   - name: Install
+     run: npm ci
+
+   - name: Deploy the latest RDCore release
+     env:
+      GH_TOKEN: ${{ github.token }}
+     run: |
+      tag=$(gh release list --repo rubberduck-vba/RDCore --exclude-drafts --limit 1 --json tagName --jq '.[0].tagName')
+      asset="rdcore-${tag#v}-linux-x64.tar.gz"
+      echo "RDCore $tag: $asset"
+      mkdir -p "$RUNNER_TEMP/rdcore/platform"
+      cd "$RUNNER_TEMP/rdcore"
+      gh release download "$tag" --repo rubberduck-vba/RDCore --pattern "$asset" --pattern SHA256SUMS
+      grep -F "  $asset" SHA256SUMS | sha256sum --check --strict -
+      tar -xzf "$asset" -C platform
+      manifest=$(find "$RUNNER_TEMP/rdcore/platform" -name rdcore.json -print -quit)
+      test -n "$manifest" || { echo "::error::$asset has no rdcore.json"; exit 1; }
+      echo "RDCORE_SMOKE_PLATFORM_ROOT=$(dirname "$manifest")" >> "$GITHUB_ENV"
+
+   - name: Smoke
+     run: npm run smoke

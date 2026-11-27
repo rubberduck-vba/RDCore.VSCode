@@ -112,7 +112,7 @@ npm run package
 
 - `npm run build` regroupe l'extension dans `dist/`, et `npm run watch` continue de le faire.
 - F5 dans ce dépôt démarre un hôte de développement d'extension sur `samples/hello`, un petit projet pour essayer l'extension.
-- `npm run smoke` démarre le serveur de langage et l'adaptateur de débogage d'une plateforme avec le code de lancement de l'extension elle-même, envoie à chacun sa requête `initialize` et affiche leurs réponses. Il exécute ensuite le programme d'exemple jusqu'à un point d'arrêt conditionnel. Il prend `--platform-root <dossier>` (ou `RDCORE_SMOKE_PLATFORM_ROOT`) et `--workspace <dossier>`.
+- `npm run smoke` démarre le serveur de langage et l'adaptateur de débogage d'une plateforme avec le code de lancement de l'extension elle-même, envoie à chacun sa requête `initialize` et affiche leurs réponses. Il vérifie la complétion et le survol dans l'exemple : un membre de sa classe, un membre de l'objet `Debug` de la bibliothèque standard, une variable et `CStr`. Il exécute ensuite le programme d'exemple jusqu'à un point d'arrêt conditionnel. Il prend `--platform-root <dossier>` (ou `RDCORE_SMOKE_PLATFORM_ROOT`) et `--workspace <dossier>`. Le flux de travail de compilation l'exécute sous Linux avec la dernière version publiée de RDCore.
 
 ### Comment elle démarre la plateforme
 

@@ -1,7 +1,9 @@
 // Starts a deployed RDCore platform with the extension's own launch code (out/launch.js, built by esbuild.mjs), and checks both
 // protocols the extension speaks to it:
 //   1. the language server: spawned, connected to over its pipe, `initialize`d; its capabilities (and any it registers after
-//      `initialized`) are printed; a module is opened and a few requests are sent; then `shutdown` and `exit`.
+//      `initialized`) are printed; the sample's two modules are opened and a few requests are sent, of which four are checked:
+//      completion of a member of the workspace's class (greeter.Greet) and of the standard library's Debug object (Debug.Print),
+//      and hover on a variable (greeter) and on a function of the standard library (CStr); then `shutdown` and `exit`.
 //   2. the debug adapter: spawned with --dap, spoken to over stdin/stdout, `initialize`d; its capabilities are printed and
 //      supportsConditionalBreakpoints checked; then the sample program is launched with a conditional breakpoint, and disconnected.
 //
@@ -24,6 +26,7 @@ const option = name => {
 const platformRoot = option("--platform-root") ?? process.env.RDCORE_SMOKE_PLATFORM_ROOT ?? "C:\\Dev\\RDCore\\artifacts\\rdcore-dev";
 const workspace = path.resolve(option("--workspace") ?? path.join(here, "..", "samples", "hello"));
 const program = path.join(workspace, "src", "Program.bas");
+const greeterClass = path.join(workspace, "src", "Greeter.cls");
 
 const failures = [];
 const started = [];
@@ -246,20 +249,26 @@ async function smokeLanguageServer() {
     console.log(JSON.stringify(initialize.result.capabilities, null, 2));
     notify("initialized", {});
 
-    // a module opened, and the requests an editor sends for it.
-    const uri = pathToFileURL(program).href;
+    // the sample's modules opened, and the requests an editor sends for them.
     const { readFileSync } = await import("node:fs");
-    notify("textDocument/didOpen", { textDocument: { uri, languageId: "vba", version: 1, text: readFileSync(program, "utf8") } });
+    const opened = new Map();
+    for (const file of [program, greeterClass]) {
+        const text = readFileSync(file, "utf8");
+        const fileUri = pathToFileURL(file).href;
+        opened.set(file, { uri: fileUri, text });
+        notify("textDocument/didOpen", { textDocument: { uri: fileUri, languageId: "vba", version: 1, text } });
+    }
+
+    const uri = opened.get(program).uri;
+    const lineCount = opened.get(program).text.split("\n").length;
     let lenses = [];
     const probes = [
         ["textDocument/documentSymbol", { textDocument: { uri } }, result => `${result?.length ?? 0} symbols`],
         ["textDocument/semanticTokens/full", { textDocument: { uri } }, result => `${(result?.data?.length ?? 0) / 5} tokens`],
         ["textDocument/foldingRange", { textDocument: { uri } }, result => `${result?.length ?? 0} ranges`],
-        ["textDocument/hover", { textDocument: { uri }, position: { line: 8, character: 25 } }, result => (result ? "a hover" : "no hover")],
         ["textDocument/codeLens", { textDocument: { uri } }, result => ((lenses = result ?? []), `${lenses.length} lenses`)],
-        ["textDocument/inlayHint", { textDocument: { uri }, range: { start: { line: 0, character: 0 }, end: { line: 11, character: 0 } } }, result => `${result?.length ?? 0} hints`],
-        ["textDocument/completion", { textDocument: { uri }, position: { line: 8, character: 28 }, context: { triggerKind: 2, triggerCharacter: "." } },
-            result => `${(Array.isArray(result) ? result : result?.items ?? []).length} items`],
+        ["textDocument/inlayHint", { textDocument: { uri }, range: { start: { line: 0, character: 0 }, end: { line: lineCount, character: 0 } } },
+            result => `${result?.length ?? 0} hints`],
     ];
     for (const [method, params, describe] of probes) {
         try {
@@ -267,6 +276,49 @@ async function smokeLanguageServer() {
             log(`${method}: ${answer.error ? `error ${JSON.stringify(answer.error)}` : describe(answer.result)}`);
         } catch (error) {
             log(`${method}: ${error.message}`);
+        }
+    }
+
+    // the checked requests, each at a place in the sample found by its text, so an edit of the sample moves them with it: the
+    // position just after `after` in the first occurrence of `text` in the file.
+    const at = (file, text, after) => {
+        const { uri: fileUri, text: source } = opened.get(file);
+        const offset = source.indexOf(text);
+        if (offset < 0) {
+            throw new Error(`${path.basename(file)} has no "${text}": the smoke checks need the sample as it was written for them.`);
+        }
+
+        const before = source.slice(0, offset + after.length).split("\n");
+        return { textDocument: { uri: fileUri }, position: { line: before.length - 1, character: before.at(-1).length } };
+    };
+    const labelsOf = result => (Array.isArray(result) ? result : result?.items ?? []).map(item => item.label);
+    const hoverText = result => {
+        const contents = result?.contents;
+        const parts = Array.isArray(contents) ? contents : [contents];
+        return parts.map(part => (typeof part === "string" ? part : part?.value ?? "")).join("\n");
+    };
+    const invoked = { triggerKind: 2, triggerCharacter: "." };
+    const checks = [
+        ["completion of a member of the workspace's class", "textDocument/completion", { ...at(program, "greeter.Greet(", "greeter."), context: invoked },
+            result => labelsOf(result).includes("Greet") || `no Greet among ${JSON.stringify(labelsOf(result))}`],
+        ["completion of a member of the standard library's Debug object", "textDocument/completion",
+            { ...at(program, "Debug.Print", "Debug."), context: invoked },
+            result => labelsOf(result).includes("Print") || `no Print among ${JSON.stringify(labelsOf(result))}`],
+        ["hover on a variable", "textDocument/hover", at(program, "greeter.Greet(", "gr"),
+            result => /\bgreeter As Greeter\b/.test(hoverText(result)) || `the hover is ${JSON.stringify(hoverText(result))}`],
+        ["hover on a function of the standard library", "textDocument/hover", at(greeterClass, "CStr(times)", "CS"),
+            result => (/\bCStr\b/.test(hoverText(result)) && /\bVBA\./.test(hoverText(result))) || `the hover is ${JSON.stringify(hoverText(result))}`],
+    ];
+    for (const [what, method, params, check] of checks) {
+        try {
+            const answer = await request(method, params, 60_000);
+            const verdict = answer.error ? `error ${JSON.stringify(answer.error)}` : check(answer.result);
+            log(`${what} (${method} at ${params.position.line}:${params.position.character}): ${verdict === true ? "ok" : verdict}`);
+            if (verdict !== true) {
+                failures.push(`${what}: ${verdict}`);
+            }
+        } catch (error) {
+            failures.push(`${what}: ${error.message}`);
         }
     }
 
@@ -436,7 +488,7 @@ for (const entry of started) {
 
 section("Result");
 if (failures.length === 0) {
-    console.log("OK: both initialize round trips done, both processes ended.");
+    console.log("OK: both initialize round trips done, completion and hover checked, both processes ended.");
 } else {
     for (const failure of failures) {
         console.log(`FAILED: ${failure}`);
