@@ -1,7 +1,18 @@
-# Dependabot opens a pull request each week for each action the workflows use that has a newer version, with its pinned commit and the version
-# in the comment beside it.
+# Dependabot opens pull requests each week for the npm packages and actions of RDCore for VS Code that have a newer version: one per group below, and
+# one per package otherwise. An action is pinned by its commit, with its version in the comment beside it.
+# Left out: @types/vscode, whose version is the lowest VS Code the extension supports (engines.vscode in package.json), and moves with it.
 version: 2
 updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: "@types/vscode"
+    groups:
+      build-tools:
+        dependency-type: development
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
