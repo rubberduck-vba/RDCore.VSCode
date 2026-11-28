@@ -1,0 +1,8 @@
+# Dependabot opens a pull request each week for each action the workflows use that has a newer version, with its pinned commit and the version
+# in the comment beside it.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
